@@ -1,0 +1,28 @@
+App::joc version 0.01
+ 
+Juniper Openconnect Client
+
+INSTALLATION
+ 
+To install this module, run the following commands:
+ 
+    perl Makefile.PL
+    make
+    make test
+    make install
+ 
+DEPENDENCIES
+ 
+Perl Modules: see Makefile.PL.
+
+Other:
+
+	- openconnect v7.05 or later.
+	- openssl (x509 and s_client)
+ 
+COPYRIGHT AND LICENCE
+ 
+Copyright (C) 2016, Steven Bakker
+ 
+This package is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
