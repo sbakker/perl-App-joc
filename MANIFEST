@@ -1,6 +1,7 @@
 MANIFEST
 MANIFEST.SKIP
 Makefile.PL
+LICENSE
 bin/joc
 bin/pulse_connect
 bin/getx509certificate
