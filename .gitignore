@@ -1,4 +1,6 @@
 blib/
 Makefile.old
+Makefile
 pm_to_blib
 META.*
+MYMETA.*
