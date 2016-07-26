@@ -1,5 +1,8 @@
 ^blib/
-^Makefile\.old$
+^Makefile(?:\.old)?$
 pm_to_blib
 ^\.gitignore$
 ^\.git/
+^App-joc-.*\.tar\.gz$
+^App-joc-.*/
+^MYMETA\.(json|yml)$
