@@ -1,0 +1,22 @@
+# Example configuration for joc
+---
+
+url:      https://vpn.example.com
+user:     john.doe@example.com
+password: S0m3th1ng-S3cr34
+
+#cafile: ssl/CA.pem
+
+exclusion_routes:
+    - jumphost.example.com
+    - mailhost.example.com
+    - www.example.com
+
+
+openconnect_args:
+    - --reconnect-timeout
+    - --force-dpd=30
+
+# For pulse client
+realm: vpn
+der_certificate: ssl/vpn.example.com.der
