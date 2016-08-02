@@ -18,6 +18,7 @@ my @scripts = qw(
 WriteMakefile(
     NAME         => $module_name,
     VERSION      => $module_version,
+    LICENSE      => 'perl_5',
     PREREQ_FATAL => 0,
     PREREQ_PM    => {
         'FindBin'         => '1.51',
