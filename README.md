@@ -33,11 +33,11 @@ To install this software, run the following commands:
 
 ## Building An RPM Package
 
-See this [Perl Hacks](http://perlhacks.com/2015/10/build-rpms-of-cpan-modules/) article for fine details.
+The distribution tarball comes with a `.spec` file (originally created using `cpanspec`, see this [Perl Hacks](http://perlhacks.com/2015/10/build-rpms-of-cpan-modules/) article for the finer details).
 
-    cpanspec perl-App-joc-0.01.tar.gz
-    cp perl-App-joc.spec <rpm-top-dir>/SPECS
-    rpmbuild -ba <rpm-top-dir>/SPECS/perl-App-joc.spec
+To build:
+
+    rpmbuild -ta App-joc-0.01.tar.gz
 
 # DEPENDENCIES
  
