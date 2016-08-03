@@ -122,7 +122,7 @@ List of default locations for C<cafile>, see L</FILES> below.
 
 =item C<openconnect_command>
 
-Command to execute for `openconnect`. Defaults to (surprise!)
+Command to execute for C<openconnect>. Defaults to (surprise!)
 C<openconnect>, i.e. it will typically use the system default.
 Can be overridden to use a different executable, e.g. a newer (self-compiled)
 version in C</usr/local/bin/openconnect>.
