@@ -9,7 +9,7 @@ B<getx509certificate> I<host>[:I<port>] I<outfile>
 =head1 DESCRIPTION
 
 C<getx509certificate> connects to I<host> on port I<port> (443 by
-default), and saves the X.509 in PEM and DER format to certificate to
+default), and saves the X.509 in PEM and DER format to
 I<outfile>B<.pem> and I<outfile>B<.der>, respectively.
 
 =head1 SEE ALSO
@@ -29,7 +29,7 @@ same terms as the Perl 5 programming language system itself.
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright 2016, Steven Bakker C<< sb AT monkey-mind DOT net >>.
+Copyright 2016, Steven Bakker C<< <sb AT monkey-mind DOT net> >>.
 
 This is free software; you can redistribute it and/or modify it under the
 same terms as the Perl 5 programming language system itself.
