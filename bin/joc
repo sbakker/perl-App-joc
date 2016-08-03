@@ -858,7 +858,7 @@ whichever one exists.
 =head1 SEE ALSO
 
 L<getx509certificate(1p)>,
-L<openconenct(8)>,
+L<openconnect(8)>,
 L<pulse_connect(1p)>.
 
 =head1 AUTHOR
