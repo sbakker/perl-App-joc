@@ -1,6 +1,6 @@
 Name:           perl-App-joc
 Version:        0.01
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
@@ -72,6 +72,8 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Tue Aug 03 2016 Steven Bakker <sb@monkey-mind.net> 0.01-3
+- Rebuild with POD fixes.
 * Tue Aug 02 2016 Steven Bakker <sb@monkey-mind.net> 0.01-2
 - Specfile fixed to include man1 and bin.
 * Tue Aug 02 2016 Steven Bakker <sb@monkey-mind.net> 0.01-1
