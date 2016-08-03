@@ -15,6 +15,22 @@ my @scripts = qw(
     pulse_connect
 );
 
+sub MY::postamble {
+    my @docfiles = map { "doc/$_.pod" } @scripts;
+
+    my $doctarget = "doc:";
+    my $postamble = '';
+
+    for my $s (@scripts) {
+        my $podfile = "doc/$s.pod";
+        $postamble .= "\n"
+                    . "$podfile: bin/$s\n"
+                    . "\t".q{podselect $? > $@}."\n";
+        $doctarget .= " $podfile";
+    }
+    return "$doctarget\n$postamble";
+}
+
 WriteMakefile(
     NAME         => $module_name,
     VERSION      => $module_version,
