@@ -20,17 +20,6 @@ I<outfile>B<.pem> and I<outfile>B<.der>, respectively.
 
 L<openssl(1)>, L<x509(1)>, L<s_client(1)>.
 
-=head1 AUTHOR
-
-Steven Bakker C<< <sb AT monkey-mind DOT net> >>
-
-=head1 COPYRIGHT AND LICENCE
-
-Copyright 2016, Steven Bakker C<< sb AT monkey-mind DOT net >>.
-
-This is free software; you can redistribute it and/or modify it under the
-same terms as the Perl 5 programming language system itself.
-
 =cut
 
 #############################################################################
@@ -133,6 +122,10 @@ print "==> Output is in $outfile.pem and $outfile.der\n";
 exit 0;
 
 __END__
+
+=head1 AUTHOR
+
+Steven Bakker C<< <sb AT monkey-mind DOT net> >>
 
 =head1 COPYRIGHT AND LICENCE
 
