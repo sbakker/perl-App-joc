@@ -786,6 +786,12 @@ Routes can be specified as host names or IP addresses
 
 List of additional arguments to pass to openconnect.
 
+=item C<openconnect_command>
+
+Command to execute for `openconnect`. Defaults to (surprise!)
+`openconnect`, but can be set to a custom location (e.g. a newer
+version, like `/opt/openconnect-7.07/bin/openconnect`).
+
 =item C<password>
 
 Password for the user. If not specified, the program will
