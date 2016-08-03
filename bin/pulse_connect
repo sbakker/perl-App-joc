@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# pulse_connect - connect to Juniper Pulse using the Pulse CLI client
+# pulse_connect - use Juniper Pulse client combined with "joc" configuration
 #
 # 26.jul.2016 - sb - created
 #
