@@ -872,7 +872,7 @@ Inspired by C<jnc>, a wrapper for the Juniper network connect client
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright 2016, Steven Bakker C<< sb AT monkey-mind DOT net >>.
+Copyright 2016, Steven Bakker C<< <sb AT monkey-mind DOT net> >>.
 
 This is free software; you can redistribute it and/or modify it under the
 same terms as the Perl 5 programming language system itself.
