@@ -31,9 +31,9 @@ Requires:       perl(URI) >= 1.71
 Requires:       perl(warnings) >= 1.34
 Requires:       perl(YAML::AppConfig) >= 0.19
 Requires:       perl(YAML::XS) >= 0.62
-Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 Requires:       openconnect >= 7.05
 Requires:       openssl >= 0.9.8
+#Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 
 %description
 JOC (Juniper Openconnect Client) CLI tool
