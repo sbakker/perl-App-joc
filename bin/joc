@@ -182,6 +182,7 @@ sub ocstart {
     }
 
     my $password = $config->get('password');
+    my $realm = $config->get('realm');
 
     if (!$password && !$config->get('certfile')) {
         $password = read_password();
@@ -222,6 +223,10 @@ sub ocstart {
     if ($password) {
         sleep 1;
         print $to_openconnect $password, "\n";
+    }
+    if ($realm) {
+        sleep 1;
+        print $to_openconnect $realm, "\n";
     }
     close $to_openconnect;
 
@@ -799,6 +804,12 @@ Should be either C<juniper> or C<nc>.  The default is autodetected,
 and depends on the version of L<openconnect(8)> installed on the
 system (v7.05 introduced experimental support for C<--juniper>,
 v7.07 introduced C<--protocol=nc>).
+
+=item C<realm>
+
+Optional realm to give to the remote end. If multiple authentication
+realms are supported, the Pulse gateway will prompt for it and a valid
+realm must be given.
 
 =item C<user>
 
