@@ -6,7 +6,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 my $module_name    = 'App::joc';
-my $module_version = '0.01';
+my $module_version = '0.02';
 
 # List of scripts in "bin" directory.
 my @scripts = qw(
