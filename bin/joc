@@ -184,6 +184,17 @@ sub ocstart {
     my $password = $config->get('password');
     my $realm = $config->get('realm');
 
+    my $extra_input = $config->get('extra_input');
+
+    if (defined $extra_input) {
+        if (ref $extra_input eq 'HASH') {
+            die "extra_input should be a list or scalar\n";
+        }
+        elsif (ref $extra_input eq '') {
+            $extra_input = [ $extra_input ];
+        }
+    }
+
     if (!$password && !$config->get('certfile')) {
         $password = read_password();
     }
@@ -227,6 +238,10 @@ sub ocstart {
     if ($realm) {
         sleep 1;
         print $to_openconnect $realm, "\n";
+    }
+    for my $input (@$extra_input) {
+        sleep 1;
+        print $to_openconnect $input, "\n";
     }
     close $to_openconnect;
 
@@ -787,6 +802,11 @@ Ignored by C<joc> (but mandatory for L<pulse_connect(1)>).
 List of destinations to be excluded from the VPN routing.
 Routes can be specified as host names or IP addresses
 (with an optional prefix length).
+
+=item C<extra_input>
+
+List of extra input lines to feed to L<openconnect(8)>. This can be
+handy in case of e.g. two-factor authentication with Duo.
 
 =item C<openconnect_args>
 
