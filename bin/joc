@@ -211,7 +211,6 @@ sub ocstart {
 
     pipe (my $from_parent, my $to_openconnect);
 
-    $SIG{CHLD} = 'IGNORE';
     $SIG{PIPE} = \&exec_openconnect_failed;
 
     my $pid = fork;
