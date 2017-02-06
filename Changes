@@ -1,5 +1,8 @@
 Revision history for App-joc
 
+0.04    06.Feb.2017
+        Don't ignore SIGCHLD.
+
 0.03    04.Feb.2017
         Add "extra_input"
 
