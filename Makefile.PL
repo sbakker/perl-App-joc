@@ -6,7 +6,7 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 my $module_name    = 'App::joc';
-my $module_version = '0.04';
+my $module_version = '0.05';
 
 # List of scripts in "bin" directory.
 my @scripts = qw(
@@ -37,6 +37,7 @@ WriteMakefile(
     LICENSE      => 'perl_5',
     PREREQ_FATAL => 0,
     PREREQ_PM    => {
+        'File::Path'      => '2.09',
         'FindBin'         => '1.51',
         'Getopt::Long'    => '2.49',
         'IPC::Run'        => '0.94',
