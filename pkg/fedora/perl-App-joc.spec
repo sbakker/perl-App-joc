@@ -1,5 +1,5 @@
 Name:           perl-App-joc
-Version:        0.04
+Version:        0.05
 Release:        1%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
@@ -9,6 +9,7 @@ Source0:        http://www.cpan.org/modules/by-module/App/App-joc-%{version}.tar
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  perl(ExtUtils::MakeMaker)
+BuildRequires:  perl(File::Path) >= 2.09
 BuildRequires:  perl(Getopt::Long) >= 2.49
 BuildRequires:  perl(IPC::Run) >= 0.94
 BuildRequires:  perl(List::Util) >= 1.45
@@ -20,6 +21,7 @@ BuildRequires:  perl(URI) >= 1.71
 BuildRequires:  perl(warnings) >= 1.34
 BuildRequires:  perl(YAML::AppConfig) >= 0.19
 BuildRequires:  perl(YAML::XS) >= 0.62
+Requires:       perl(File::Path) >= 2.09
 Requires:       perl(Getopt::Long) >= 2.49
 Requires:       perl(IPC::Run) >= 0.94
 Requires:       perl(List::Util) >= 1.45
@@ -72,6 +74,8 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Fri May  5 2017 Steven Bakker <sb@monkey-mind.net> 0.05-1
+- Release 0.05.
 * Mon Feb  6 2017 Steven Bakker <sb@monkey-mind.net> 0.04-1
 - Release 0.04.
 * Sat Feb  4 2017 Steven Bakker <sb@monkey-mind.net> 0.03-2
