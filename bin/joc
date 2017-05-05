@@ -17,6 +17,7 @@ use Pod::Usage;
 use YAML::XS qw();
 use YAML::AppConfig;
 use Term::ReadKey;
+use File::Path qw( make_path );
 use List::Util qw( first );
 use Getopt::Long qw( :config no_ignore_case bundling );
 
@@ -31,20 +32,24 @@ my @PATH = qw(
 
 $::ENV{'PATH'} = join(':', @PATH);
 
-# Determine the "real" user name, i.e. the one that
-# initiated this script. If under sudo, this will be
-# the SUDO_USER, otherwise we'll try the USER or LOGNAME
-# envariables, falling back to the real user-id if all
-# else fails.
-my $USER = $::ENV{SUDO_USER} // $::ENV{USER}
-            // $::ENV{LOGNAME} // getpwuid($<);
+# Determine the "real" UID, i.e. the one that initiated this script.
+# If under sudo, this will be the SUDO_UID, otherwise we'll try the
+# UID envariables, falling back to the real UID.
+my $UID    = $::ENV{SUDO_UID} // $::ENV{UID} // $<;
+
+# Determine the user's real group ID (numeric).
+my $GID    = $::ENV{SUDO_GID} // $::ENV{GID} // $(;
+#
+# Get the user name (string)
+my $USER   = getpwuid($UID) or fatal("uid $UID not known");
 
 # Get the user's _real_ HOME directory.
-$::ENV{HOME} = (getpwnam($USER))[7];
+$::ENV{HOME} = (getpwuid($UID))[7];
 
-my $APP_DIR         = "$ENV{'HOME'}/.joc";
-my $STATEFILE       = "$APP_DIR/state/${progname}_state.yml";
-my $DFL_CONFIG_DIR  = "$APP_DIR/config";
+my $APP_DIR;
+my $DFL_CONFIG_DIR;
+my $STATEFILE;
+
 my $DFL_CONFIG_FILE = "default.yml";
 
 my @DFL_CAFILE      = qw(
@@ -53,7 +58,7 @@ my @DFL_CAFILE      = qw(
 );
 
 # need sbin for ifconfig command
-$ENV{'PATH'}        = "$APP_DIR/bin:/sbin:/usr/sbin:$ENV{'PATH'}";
+$ENV{'PATH'}        = "/sbin:/usr/sbin:$ENV{'PATH'}";
 $ENV{'LANG'}        = "C";
 
 Main();
@@ -64,6 +69,8 @@ sub Main {
     my @args = @ARGV;
     my %opts;
 
+    setup_paths();
+
     my $opts = read_args(
         config_dir          => $DFL_CONFIG_DIR,
         config_file         => $DFL_CONFIG_FILE,
@@ -73,8 +80,8 @@ sub Main {
 
     # Re-execute with "sudo" if not running as root.
     if ($> != 0) {
-        exec('sudo', "$FindBin::RealBin/$FindBin::RealScript", @args);
-        die "$FindBin::Script: cannot exec sudo: $!\n";
+        exec('sudo', '-E', "$FindBin::RealBin/$FindBin::RealScript", @args)
+            or fatal("cannot exec 'sudo': $!");
     }
 
     my $config_path = "$$opts{config_dir}/$$opts{config_file}";
@@ -95,6 +102,85 @@ sub Main {
     }
 }
 
+#############################################################################
+sub info {
+#############################################################################
+    warn map { "** INFO [$progname] $_\n" } split(/\n/, join('', @_));
+}
+
+#############################################################################
+sub warning {
+#############################################################################
+    warn map { "** WARNING [$progname] $_\n" } split(/\n/, join('', @_));
+}
+
+#############################################################################
+sub fatal {
+#############################################################################
+    die map { "** FATAL [$progname] $_\n" } split(/\n/, join('', @_));
+}
+
+#############################################################################
+sub setup_paths {
+#############################################################################
+    #
+    # Set values for:
+    #
+    #   $APP_DIR
+    #   $DFL_CONFIG_DIR
+    #   $STATEFILE
+
+    my $xdg_config_home = $::ENV{XDG_CONFIG_HOME} // "$::ENV{HOME}/.config";
+    my $xdg_data_home   = $::ENV{XDG_DATA_HOME}   // "$::ENV{HOME}/.local/share";
+
+    my $app_dir = "$xdg_config_home/joc";
+    $APP_DIR = "$xdg_config_home/joc";
+
+    if (! -d $APP_DIR) {
+        if (-d "$::ENV{HOME}/.joc") {
+            warning(
+                "$APP_DIR does not exist, but ~/.joc does\n",
+                "Consider migrating to the XDG base standard\n"
+            );
+            $APP_DIR = "$::ENV{HOME}/.joc";
+        }
+    }
+
+
+    my $state_dir;
+
+    if (! -d $xdg_data_home) {
+        if (-d "$::ENV{HOME}/.joc") {
+            warning(
+                "$xdg_data_home Does not exist, but ~/.joc does\n",
+                "Consider migrating to the XDG base standard\n"
+            );
+            $state_dir = "$::ENV{HOME}/.joc/state";
+        }
+    }
+    else {
+        $state_dir = "$xdg_data_home/joc";
+    }
+
+    if (! -d $state_dir) {
+        eval {
+            make_path($state_dir, {
+                owner => $UID,
+                group => $GID,
+                mode  => 0750,
+            });
+        };
+        if (my $err = $@) {
+            chomp($err);
+            $err =~ s/ at .*? line \d+\.$//;
+            fatal("cannot create $state_dir: $err");
+        }
+    }
+
+    $DFL_CONFIG_DIR = "$APP_DIR/config";
+    $STATEFILE      = "$state_dir/${progname}_state.yml";
+}
+
 
 #############################################################################
 sub occheck {
@@ -106,21 +192,24 @@ sub occheck {
 
     my $version = readpipe("$cmd --version");
     if ($? != 0) {
-        die "FATAL: could not determine version of openconnect\n";
+        fatal("cannot determine version of openconnect");
     }
 
     my $proto = lc ($config->get('protocol') // '');
 
     $version =~ s/^.* version v(\S+)\n.*$/$1/s;
     if ($version lt '7.05') {
-        die "FATAL: openconnect version $version is too low.\n",
-            "FATAL: need at least version 7.05 for Juniper support\n";
+        fatal(
+            "openconnect version $version is too old.\n",
+            "need at least version 7.05 for Juniper support\n"
+        );
     }
     if ($version lt '7.07') {
         if ($proto eq 'nc') {
-            print STDERR "WARNING: protocol 'nc' not supported on ",
-                         "openconnect v$version.\n",
-                         "WARNING: defaulting to '--juniper'\n";
+            warning(
+                "protocol 'nc' not supported on openconnect v$version.\n",
+                "defaulting to '--juniper'\n"
+            );
         }
         $proto = 'juniper';
     }
@@ -129,7 +218,7 @@ sub occheck {
     }
 
     if ($proto ne 'nc' and $proto ne 'juniper') {
-        die "FATAL: unsupported protocol '$proto'\n";
+        fatal("unsupported protocol '$proto'\n");
     }
 
     $config->set('protocol' => $proto);
@@ -218,6 +307,7 @@ sub ocstart {
 
     if ($pid == 0)  {
         close $to_openconnect;
+        chdir $APP_DIR || fatal("cannot chdir to $APP_DIR $!\n");
         exec_openconnect(
             $config->get('openconnect_command'),
             $from_parent, \@openconnect_args
@@ -288,7 +378,7 @@ sub ocstart {
     }
 
     # Save state information.
-    dump_statefile(
+    write_statefile(
         pid => $pid,
         default_gateways => \@default_gateways,
         exclusion_routes => \@exclusion_routes,
@@ -315,7 +405,7 @@ Usage: $progname [OPTIONS]... [CONFIG]
 $progname: a wrapper for using openconnect to connect to Juniper Pulse VPNs
 
 -c, --confdir       directory which contains the config files
-                    (default: ~/.joc/config)
+                    (default: ~/.config/joc/config)
 -?, -h, --help      print this help message
 
 CONFIG: setting foo as CONFIG: config file is
@@ -394,21 +484,24 @@ sub read_config {
         if (my $dfl_ca = $config->get('default_cafile')) {
             my @dfl_ca = ref $dfl_ca ? @$dfl_ca : ($dfl_ca);
             if ($dfl_ca = first { -f $_ } @dfl_ca) {
-                print STDERR "WARNING: no cafile or servercert defined ",
-                             "in $config_file.\n",
-                             "WARNING: Choosing default cafile '$dfl_ca'.\n";
+                info(
+                    "No cafile or servercert defined in $config_file.\n",
+                    "Choosing default cafile '$dfl_ca'.\n"
+                );
                 $config->set('cafile' => $dfl_ca);
             }
             else {
-                die "FATAL: no cafile or servercert defined ",
-                    "in $config_file.\n",
-                    "FATAL: No suitable default available.\n";
+                fatal(
+                    "No cafile or servercert defined in $config_file.\n",
+                    "No suitable default available.\n"
+                );
             }
         }
         else {
-            die "FATAL: no cafile or servercert defined ",
-                "in $config_file.\n",
-                "FATAL: No defaults defined.\n";
+            fatal(
+                "No cafile or servercert defined in $config_file.\n",
+                "No defaults defined.\n"
+            );
         }
     }
 
@@ -453,18 +546,19 @@ sub get_inet_addr {
 
 
 #############################################################################
-sub dump_statefile {
+sub write_statefile {
 #############################################################################
     my %args = @_;
 
     my $yaml_text = YAML::XS::Dump(\%args);
 
     if (open my $state_fh, ">", $STATEFILE) {
+        chown($UID, $GID, $STATEFILE); # Add correct ownership.
         print $state_fh $yaml_text;
         return close $state_fh;
     }
     else {
-        print STDERR "FATAL: cannot write $STATEFILE: $!\n",
+        print STDERR "** ERROR [$progname] cannot write $STATEFILE: $!\n",
                 "\nSave the following information to ",
                 "$STATEFILE manually if possible:\n",
                 "# STATE\n",
@@ -486,11 +580,11 @@ sub read_statefile {
             $state_ref = YAML::XS::LoadFile($STATEFILE);
         }
         else {
-            print STDERR "WARNING: cannot read $STATEFILE: $!\n";
+            warning("cannot read $STATEFILE: $!\n");
         }
     }
     else {
-        print STDERR "WARNING: cannot read $STATEFILE: $!\n";
+        warning("$STATEFILE does not exist\n");
     }
 
     for my $k (qw( default_gateways exclusion_routes )) {
@@ -609,8 +703,6 @@ sub exec_openconnect {
     print STDERR "EXEC: ",
         join(' ', $openconnect_command, @$openconnect_args), "\n";
 
-    chdir $APP_DIR || die "$FindBin::Script: cannot chdir to $APP_DIR $!\n";
-
     open(STDIN, '<&'.fileno($from_parent)) or die ("open: $!");
 
     select STDERR;   $| = 1;
@@ -679,7 +771,7 @@ with C<sudo> if it is not running as root yet.
 =item B<--confdir>=I<confdir>
 X<-c>X<--confdir>
 
-Directory which contains the config files (default: F<~/.joc/config>).
+Directory which contains the config files (default: F<~/.config/joc/config>).
 
 =item B<-s>, B<--stop>
 X<-s>X<--stop>
@@ -736,7 +828,7 @@ Top-level directory for the application files. Any relative path names
 specified in the configuration file are taken to be relative to this
 directory.
 
-Value: C<~/.joc>
+Value: C<~/.config/joc>
 
 =item C<CONFIG_DIR>
 
@@ -807,6 +899,8 @@ Routes can be specified as host names or IP addresses
 List of extra input lines to feed to L<openconnect(8)>. This can be
 handy in case of e.g. two-factor authentication with Duo.
 
+See also the L<Duo MFA|/Duo MFA> example below.
+
 =item C<openconnect_args>
 
 List of additional arguments to pass to openconnect.
@@ -838,23 +932,32 @@ Defaults to the name of the user executing C<joc>.
 
 =head1 EXAMPLE
 
+=head2 Basic Configuration
+
 Example config file:
 
-    # Configuration in "~/.joc/config/example.yml"
+    # Configuration in "~/.config/joc/config/example.yml"
     ---
+    # Mandatory: URL to connect to
     url: https://vpn.example.com
+
+    # Mandatory: authentication credentials
+    user: john.doe@example.com
+    password: S@m3th1ng-53cr34
+
+    # Mandatory: CA certificate for VPN gateway.
     cafile: ssl/startcom-CA.pem
+
+    # Optional: exclude these hosts from being routed over the VPN
     exclusion_routes:
         - jumphost.example.com
         - mailhost.example.com
         - www.example.com
 
-    # Use self-compiled, newer version.
+    # Optional: use self-compiled, newer version.
     openconnect_command: $HOME/src/openconnect-7.07/openconnect
 
-    user: john.doe@example.com
-    password: S@m3th1ng-53cr34
-
+    # Optional: additional openconnect(8) CLI arguments.
     openconnect_args:
         - --reconnect-timeout
         - --force-dpd=30
@@ -866,14 +969,73 @@ Using the config:
 
     joc example
 
+=head2 Duo MFA
+
+Example config for Duo multi-factor authentication. This is basically the
+same as the exampla above, except for the change in C<url> and the addition
+of C<extra_input>:
+
+    # Configuration in "~/.joc/config/duo.yml"
+    ---
+    # Mandatory: URL to connect to
+    url: https://vpn.example.com/Duo
+
+    # Tell the VPN Duo module to use push notifications
+    extra_input: push
+
+    # Mandatory: authentication credentials
+    user: john.doe@example.com
+    password: S@m3th1ng-53cr34
+
+    # Mandatory: CA certificate for VPN gateway.
+    cafile: ssl/startcom-CA.pem
+
+    # Optional: exclude these hosts from being routed over the VPN
+    exclusion_routes:
+        - jumphost.example.com
+        - mailhost.example.com
+        - www.example.com
+
+    # Optional: use self-compiled, newer version.
+    openconnect_command: $HOME/src/openconnect-7.07/openconnect
+
+    # Optional: additional openconnect(8) CLI arguments.
+    openconnect_args:
+        - --reconnect-timeout
+        - --force-dpd=30
+
+    # For pulse client (see pulse_connect)
+    der_certificate: ssl/vpn.example.com.der
+
+Using the config:
+
+    joc duo
+
 =head1 FILES
 
 =over
 
-=item F<~/.joc/config>
+=item F<~/.config/joc> (XDG compliant)
+
+=item F<~/.joc> (deprecated)
+
+Default "top-level" directory for application configuration files.
+See L<APP_DIR|/APP_DIR>.
+
+=item F<~/.config/joc/config> (XDG compliant)
+
+=item F<~/.joc/config> (deprecated)
 
 Location of configuration files; for instance, the configuration I<foo>
-would be found in C<~/.joc/config/foo.conf>.
+would be found in C<~/.config/joc/config/foo.conf>.
+
+See L<CONFIG_DIR|/CONFIG_DIR> and L<--confdir|/--confdir>.
+
+=item F<~/.local/share/joc/joc_state.yml>
+
+=item F<~/.joc/state/joc_state.yml>
+
+Application state file (such as active exclusion routes).
 
 =item F</etc/ssl/certs/ca-bundle.crt>
 
