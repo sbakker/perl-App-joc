@@ -49,6 +49,8 @@ $::ENV{HOME} = (getpwuid($UID))[7];
 my $APP_DIR;
 my $DFL_CONFIG_DIR;
 my $STATEFILE;
+my $XDG_CONFIG_HOME;
+my $XDG_DATA_HOME;
 
 my $DFL_CONFIG_FILE = "default.yml";
 
@@ -57,9 +59,7 @@ my @DFL_CAFILE      = qw(
     /etc/ssl/certs/ca-certificates.crt
 );
 
-# need sbin for ifconfig command
-$ENV{'PATH'}        = "/sbin:/usr/sbin:$ENV{'PATH'}";
-$ENV{'LANG'}        = "C";
+$::ENV{'LANG'}        = "C";
 
 Main();
 
@@ -69,19 +69,33 @@ sub Main {
     my @args = @ARGV;
     my %opts;
 
-    setup_paths();
-
     my $opts = read_args(
-        config_dir          => $DFL_CONFIG_DIR,
+        #config_dir          => $DFL_CONFIG_DIR,
         config_file         => $DFL_CONFIG_FILE,
+        environment         => {},
         openconnect_command => 'openconnect',
         stop                => 0,
     );
 
+    # Modify environment where necessary.
+    while (my ($var, $value) = each %{$opts->{environment}}) {
+        $::ENV{$var} = $value;
+    }
+
+    setup_paths();
+
+    $opts{config_dir} //= $DFL_CONFIG_DIR;
+    $opts{config_dir} =~ s{/+$}{};
+
     # Re-execute with "sudo" if not running as root.
     if ($> != 0) {
-        exec('sudo', '-E', "$FindBin::RealBin/$FindBin::RealScript", @args)
-            or fatal("cannot exec 'sudo': $!");
+        exec(
+            'sudo', "$FindBin::RealBin/$FindBin::RealScript",
+                '--environment' => "XDG_CONFIG_HOME=$XDG_CONFIG_HOME",
+                '--environment' => "XDG_DATA_HOME=$XDG_DATA_HOME",
+                '--confdir' => $opts{config_dir},
+                @args,
+        ) or fatal("cannot exec 'sudo': $!");
     }
 
     my $config_path = "$$opts{config_dir}/$$opts{config_file}";
@@ -129,12 +143,14 @@ sub setup_paths {
     #   $APP_DIR
     #   $DFL_CONFIG_DIR
     #   $STATEFILE
+    #   $XDG_CONFIG_HOME
+    #   $XDG_DATA_HOME
+    #
 
-    my $xdg_config_home = $::ENV{XDG_CONFIG_HOME} // "$::ENV{HOME}/.config";
-    my $xdg_data_home   = $::ENV{XDG_DATA_HOME}   // "$::ENV{HOME}/.local/share";
+    $XDG_CONFIG_HOME //= $::ENV{XDG_CONFIG_HOME} // "$::ENV{HOME}/.config";
+    $XDG_DATA_HOME   //= $::ENV{XDG_DATA_HOME}   // "$::ENV{HOME}/.local/share";
 
-    my $app_dir = "$xdg_config_home/joc";
-    $APP_DIR = "$xdg_config_home/joc";
+    $APP_DIR = "$XDG_CONFIG_HOME/joc";
 
     if (! -d $APP_DIR) {
         if (-d "$::ENV{HOME}/.joc") {
@@ -146,20 +162,19 @@ sub setup_paths {
         }
     }
 
-
     my $state_dir;
 
-    if (! -d $xdg_data_home) {
+    if (! -d $XDG_DATA_HOME) {
         if (-d "$::ENV{HOME}/.joc") {
             warning(
-                "$xdg_data_home Does not exist, but ~/.joc does\n",
+                "$XDG_DATA_HOME Does not exist, but ~/.joc does\n",
                 "Consider migrating to the XDG base standard\n"
             );
             $state_dir = "$::ENV{HOME}/.joc/state";
         }
     }
     else {
-        $state_dir = "$xdg_data_home/joc";
+        $state_dir = "$XDG_DATA_HOME/joc";
     }
 
     if (! -d $state_dir) {
@@ -404,8 +419,15 @@ Usage: $progname [OPTIONS]... [CONFIG]
 
 $progname: a wrapper for using openconnect to connect to Juniper Pulse VPNs
 
--c, --confdir       directory which contains the config files
-                    (default: ~/.config/joc/config)
+-c DIR
+--confdir=DIR
+    Directory which contains the config files
+    (default: ~/.config/joc/config)
+
+-e VAR=VALUE
+--environment VAR=VALUE
+    Set environment variable for joc
+
 -?, -h, --help      print this help message
 
 CONFIG: setting foo as CONFIG: config file is
@@ -442,13 +464,14 @@ sub read_args {
 #############################################################################
   my %opts = @_;
 
-  GetOptions(
-    'confdir|c=s'  => \$opts{config_dir},
-    'stop|s'       => \$opts{stop},
-    'help|h|?'     => sub { help(); exit 0; },
-  ) or die qq{Try "$progname --help" for more information.\n"};
+  $opts{environment} //= {};
 
-  $opts{config_dir} =~ s{/+$}{};
+  GetOptions(
+    'confdir|c=s'     => \$opts{config_dir},
+    'environment|e=s' => $opts{environment},
+    'stop|s'          => \$opts{stop},
+    'help|h|?'        => sub { help(); exit 0; },
+  ) or die qq{Try "$progname --help" for more information.\n"};
 
   if (@ARGV == 1) {
     $opts{config_file} = (shift @ARGV).".yml";
@@ -726,7 +749,7 @@ joc - Juniper Openconnect Client
 
 =item Short Options:
 
-B<joc> [B<-c> I<confdir>]  [I<config>]
+B<joc> [B<-c> I<confdir>] [B<-e> I<VAR>B<=>I<VALUE> ...] [I<config>]
 
 B<joc> B<-s>
 
@@ -734,7 +757,7 @@ B<joc> {B<-?|-h>}
 
 =item Long Options:
 
-B<joc> [B<--confdir>=I<confdir>]  [I<config>]
+B<joc> [B<--confdir>=I<confdir>]  [B<--environment> I<VAR>=I<VALUE> ...] [I<config>]
 
 B<joc> B<--stop>
 
@@ -772,6 +795,20 @@ with C<sudo> if it is not running as root yet.
 X<-c>X<--confdir>
 
 Directory which contains the config files (default: F<~/.config/joc/config>).
+
+=item B<-e> I<VAR>B<=>I<VAL>
+
+=item B<--confdir>=I<confdir>
+
+=item B<--environment>=I<VAR>B<=>I<VAL>
+
+X<-e>X<--environment>
+
+Set environment variable I<VAR> to value I<VAL>, also for the bit that is
+executed under L<sudo>(8).
+
+This option is used internally by the script to carry over values for
+I<XDG_CONFIG_HOME> and I<XDG_DATA_HOME>.
 
 =item B<-s>, B<--stop>
 X<-s>X<--stop>
