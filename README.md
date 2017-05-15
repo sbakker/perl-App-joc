@@ -39,7 +39,7 @@ The distribution tarball comes with a `.spec` file (originally created using `cp
 
 To build:
 
-    rpmbuild -ta App-joc-0.05.tar.gz
+    rpmbuild -ta App-joc-0.06.tar.gz
 
 ## DEPENDENCIES
  
