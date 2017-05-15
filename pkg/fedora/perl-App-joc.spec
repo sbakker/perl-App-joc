@@ -1,6 +1,6 @@
 Name:           perl-App-joc
 Version:        0.06
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
