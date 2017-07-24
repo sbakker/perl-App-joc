@@ -1,4 +1,4 @@
-## App::joc version 0.01
+## App::joc version 0.06
  
 ## DESCRIPTION
 
@@ -52,7 +52,7 @@ To build:
  
 ## COPYRIGHT AND LICENCE
  
-Copyright (C) 2016, Steven Bakker _<sb AT monkey-mind DOT net>_
+Copyright (c) 2016, Steven Bakker _<sb AT monkey-mind DOT net>_
  
 This package is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
