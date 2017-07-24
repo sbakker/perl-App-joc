@@ -1,5 +1,15 @@
 Revision history for App-joc
 
+0.06    15.May.2017
+        * Get rid of the need for "-E" in sudo.
+
+0.05    05.May.2017
+        * Cleanup code.
+        * Expand documentation on MFA.
+        * Better error diagnostics.
+        * Use XDG directories if possible.
+        * Fix ownership of state file.
+
 0.04    06.Feb.2017
         Don't ignore SIGCHLD.
 
