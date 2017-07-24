@@ -74,6 +74,8 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Mon Jul 24 2017 Steven Bakker <sb@monkey-mind.net> 0.06-3
+- Release 0.06-3 (minor DOC fixes).
 * Mon May 15 2017 Steven Bakker <sb@monkey-mind.net> 0.06-1
 - Release 0.06.
 * Fri May  5 2017 Steven Bakker <sb@monkey-mind.net> 0.05-1
