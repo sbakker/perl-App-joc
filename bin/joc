@@ -5,7 +5,7 @@
 # See POD at end.
 #
 
-use 5.014;
+use 5.014_001;
 use strict;
 use warnings;
 
