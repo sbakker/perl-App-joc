@@ -724,7 +724,7 @@ sub get_addresses {
             $addr{$ip}++;
         }
     }
-    return sort { $a <=> $b } keys %addr;
+    return sort { $a cmp $b } keys %addr;
 }
 
 
