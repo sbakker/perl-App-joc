@@ -10,15 +10,15 @@ use strict;
 use warnings;
 
 use FindBin;
-use POSIX qw(setsid);
+use POSIX qw( setsid );
 use URI;
-use NetAddr::IP;
 use Pod::Usage;
 use YAML::XS qw();
 use YAML::AppConfig;
 use Term::ReadKey;
 use File::Path qw( make_path );
 use List::Util qw( first );
+use Socket qw( :addrinfo AF_INET );
 use Getopt::Long qw( :config no_ignore_case bundling );
 
 my $progname = $FindBin::Script;
@@ -59,7 +59,7 @@ my @DFL_CAFILE      = qw(
     /etc/ssl/certs/ca-certificates.crt
 );
 
-$::ENV{'LANG'}        = "C";
+$::ENV{'LANG'} = "C";
 
 Main();
 
@@ -284,6 +284,7 @@ sub ocstart {
     if (my $ex_routes = $config->get('exclusion_routes')) {
         @exclusion_routes = ref $ex_routes ? @$ex_routes : ($ex_routes);
     }
+    @exclusion_routes = get_addresses(@exclusion_routes);
 
     my $password = $config->get('password');
     my $realm = $config->get('realm');
@@ -401,7 +402,7 @@ sub ocstart {
 
     foreach my $route (@exclusion_routes) {
         foreach my $gw (@default_gateways) {
-            do_system(1, qw(route add), $route, 'gw', $gw);
+            do_system(1, qw(ip route add), $route, 'via', $gw);
         }
     }
 
@@ -652,7 +653,7 @@ sub ocstop {
 
     foreach my $route (@$routes) {
         foreach my $gw (@$gateways) {
-            do_system( 1, qw( route del ), $route, q{gw}, $gw );
+            do_system( 1, qw(ip route del), $route, 'via', $gw );
         }
     }
     exit(0);
@@ -684,9 +685,9 @@ sub do_system {
 sub get_default_routes {
 #############################################################################
     my @routes;
-    foreach (readpipe('netstat -rn')) {
+    foreach (readpipe('ip route show match 0/0')) {
         my @F = split(' ', $_);
-        push(@routes, $F[1]) if $F[0] eq '0.0.0.0';
+        push(@routes, $F[2]) if $F[0] eq 'default';
     }
     return @routes;
 }
@@ -707,10 +708,20 @@ sub get_addresses {
     my %addr;
 
     for my $host (@hosts) {
-        my @addr = gethostbyname($host)
-                    or die "$0: cannot resolve $host: $!\n";
-        for my $addr (@addr[4..$#addr]) {
-            $addr{NetAddr::IP->new_from_aton($addr)} = 1;
+        # Don't try to look up literal IP/IP-prefixes
+        if ($host =~ /^(?:\d+\.){0,3}\d+(?:\/\d+)$/) {
+            $addr{$host}++;
+            next;
+        }
+
+        my ($err, @addr) = getaddrinfo($host, 0, { family => AF_INET } );
+        if (@addr == 0) {
+            die "$FindBin::Script: cannot resolve $host: $err\n";
+        }
+        for my $addr (@addr) {
+            my ($err, $ip)
+                = getnameinfo($addr->{addr}, NI_NUMERICHOST, NIx_NOSERV);
+            $addr{$ip}++;
         }
     }
     return sort { $a <=> $b } keys %addr;
