@@ -1,5 +1,9 @@
 Revision history for App-joc
 
+0.07    30.Jan.2018
+        * Resolve hostnames in exclusion_routes.
+        * Use "ip route" instead of "route" and "netstat".
+
 0.06    15.May.2017
         * Get rid of the need for "-E" in sudo.
 
