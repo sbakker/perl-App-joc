@@ -1,5 +1,5 @@
 Name:           perl-App-joc
-Version:        0.07
+Version:        0.08
 Release:        1%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
@@ -8,6 +8,7 @@ URL:            http://search.cpan.org/dist/App-joc/
 Source0:        http://www.cpan.org/modules/by-module/App/App-joc-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
+Provides:       perl(App::joc) = 0.08
 BuildRequires:  perl(ExtUtils::MakeMaker)
 BuildRequires:  perl(File::Path) >= 2.09
 BuildRequires:  perl(Getopt::Long) >= 2.49
@@ -35,7 +36,7 @@ Requires:       perl(YAML::AppConfig) >= 0.19
 Requires:       perl(YAML::XS) >= 0.62
 Requires:       openconnect >= 7.05
 Requires:       openssl >= 0.9.8
-#Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 
 %description
 JOC (Juniper Openconnect Client) CLI tool
@@ -65,7 +66,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc LICENSE META.json
+%doc LICENSE META.json README.md Changes
 /usr/bin/getx509certificate
 /usr/bin/joc
 /usr/bin/pulse_connect
@@ -74,7 +75,9 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
-* Mon Jan 30 2018 Steven Bakker <sb@monkey-mind.net> 0.07-1
+* Sun Mar 11 2018 Steven Bakker <sb@monkey-mind.net> 0.08-1
+- Release 0.08-1 (minor DOC fixes).
+* Tue Jan 30 2018 Steven Bakker <sb@monkey-mind.net> 0.07-1
 - Release 0.07-1 (DNS lookup fixes for exlusion routes).
 * Mon Jul 24 2017 Steven Bakker <sb@monkey-mind.net> 0.06-3
 - Release 0.06-3 (minor DOC fixes).
@@ -88,7 +91,7 @@ rm -rf $RPM_BUILD_ROOT
 - Release 0.03.
 * Tue Jan 17 2017 Steven Bakker <sb@monkey-mind.net> 0.02-1
 - Release 0.02.
-* Tue Aug 03 2016 Steven Bakker <sb@monkey-mind.net> 0.01-3
+* Wed Aug 03 2016 Steven Bakker <sb@monkey-mind.net> 0.01-3
 - Rebuild with POD fixes.
 * Tue Aug 02 2016 Steven Bakker <sb@monkey-mind.net> 0.01-2
 - Specfile fixed to include man1 and bin.
