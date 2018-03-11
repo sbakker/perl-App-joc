@@ -126,11 +126,11 @@ __END__
 
 =head1 AUTHOR
 
-Steven Bakker C<< <sb AT monkey-mind DOT net> >>
+Steven Bakker C<< <sbakker@cpan.org> >>
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright 2016, Steven Bakker C<< <sb AT monkey-mind DOT net> >>.
+Copyright 2016, Steven Bakker C<< <sbakker@cpan.org> >>.
 
 This is free software; you can redistribute it and/or modify it under the
 same terms as the Perl 5 programming language system itself.
