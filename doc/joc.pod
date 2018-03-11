@@ -8,7 +8,7 @@ joc - Juniper Openconnect Client
 
 =item Short Options:
 
-B<joc> [B<-c> I<confdir>]  [I<config>]
+B<joc> [B<-c> I<confdir>] [B<-e> I<VAR>B<=>I<VALUE> ...] [I<config>]
 
 B<joc> B<-s>
 
@@ -16,7 +16,7 @@ B<joc> {B<-?|-h>}
 
 =item Long Options:
 
-B<joc> [B<--confdir>=I<confdir>]  [I<config>]
+B<joc> [B<--confdir>=I<confdir>]  [B<--environment> I<VAR>=I<VALUE> ...] [I<config>]
 
 B<joc> B<--stop>
 
@@ -53,7 +53,21 @@ with C<sudo> if it is not running as root yet.
 =item B<--confdir>=I<confdir>
 X<-c>X<--confdir>
 
-Directory which contains the config files (default: F<~/.joc/config>).
+Directory which contains the config files (default: F<~/.config/joc/config>).
+
+=item B<-e> I<VAR>B<=>I<VAL>
+
+=item B<--confdir>=I<confdir>
+
+=item B<--environment>=I<VAR>B<=>I<VAL>
+
+X<-e>X<--environment>
+
+Set environment variable I<VAR> to value I<VAL>, also for the bit that is
+executed under L<sudo>(8).
+
+This option is used internally by the script to carry over values for
+I<XDG_CONFIG_HOME> and I<XDG_DATA_HOME>.
 
 =item B<-s>, B<--stop>
 X<-s>X<--stop>
@@ -110,7 +124,7 @@ Top-level directory for the application files. Any relative path names
 specified in the configuration file are taken to be relative to this
 directory.
 
-Value: C<~/.joc>
+Value: C<~/.config/joc>
 
 =item C<CONFIG_DIR>
 
@@ -176,6 +190,13 @@ List of destinations to be excluded from the VPN routing.
 Routes can be specified as host names or IP addresses
 (with an optional prefix length).
 
+=item C<extra_input>
+
+List of extra input lines to feed to L<openconnect(8)>. This can be
+handy in case of e.g. two-factor authentication with Duo.
+
+See also the L<Duo MFA|/Duo MFA> example below.
+
 =item C<openconnect_args>
 
 List of additional arguments to pass to openconnect.
@@ -193,6 +214,12 @@ and depends on the version of L<openconnect(8)> installed on the
 system (v7.05 introduced experimental support for C<--juniper>,
 v7.07 introduced C<--protocol=nc>).
 
+=item C<realm>
+
+Optional realm to give to the remote end. If multiple authentication
+realms are supported, the Pulse gateway will prompt for it and a valid
+realm must be given.
+
 =item C<user>
 
 Defaults to the name of the user executing C<joc>.
@@ -201,23 +228,32 @@ Defaults to the name of the user executing C<joc>.
 
 =head1 EXAMPLE
 
+=head2 Basic Configuration
+
 Example config file:
 
-    # Configuration in "~/.joc/config/example.yml"
+    # Configuration in "~/.config/joc/config/example.yml"
     ---
+    # Mandatory: URL to connect to
     url: https://vpn.example.com
+
+    # Mandatory: authentication credentials
+    user: john.doe@example.com
+    password: S@m3th1ng-53cr34
+
+    # Mandatory: CA certificate for VPN gateway.
     cafile: ssl/startcom-CA.pem
+
+    # Optional: exclude these hosts from being routed over the VPN
     exclusion_routes:
         - jumphost.example.com
         - mailhost.example.com
         - www.example.com
 
-    # Use self-compiled, newer version.
+    # Optional: use self-compiled, newer version.
     openconnect_command: $HOME/src/openconnect-7.07/openconnect
 
-    user: john.doe@example.com
-    password: S@m3th1ng-53cr34
-
+    # Optional: additional openconnect(8) CLI arguments.
     openconnect_args:
         - --reconnect-timeout
         - --force-dpd=30
@@ -229,14 +265,73 @@ Using the config:
 
     joc example
 
+=head2 Duo MFA
+
+Example config for Duo multi-factor authentication. This is basically the
+same as the exampla above, except for the change in C<url> and the addition
+of C<extra_input>:
+
+    # Configuration in "~/.joc/config/duo.yml"
+    ---
+    # Mandatory: URL to connect to
+    url: https://vpn.example.com/Duo
+
+    # Tell the VPN Duo module to use push notifications
+    extra_input: push
+
+    # Mandatory: authentication credentials
+    user: john.doe@example.com
+    password: S@m3th1ng-53cr34
+
+    # Mandatory: CA certificate for VPN gateway.
+    cafile: ssl/startcom-CA.pem
+
+    # Optional: exclude these hosts from being routed over the VPN
+    exclusion_routes:
+        - jumphost.example.com
+        - mailhost.example.com
+        - www.example.com
+
+    # Optional: use self-compiled, newer version.
+    openconnect_command: $HOME/src/openconnect-7.07/openconnect
+
+    # Optional: additional openconnect(8) CLI arguments.
+    openconnect_args:
+        - --reconnect-timeout
+        - --force-dpd=30
+
+    # For pulse client (see pulse_connect)
+    der_certificate: ssl/vpn.example.com.der
+
+Using the config:
+
+    joc duo
+
 =head1 FILES
 
 =over
 
-=item F<~/.joc/config>
+=item F<~/.config/joc> (XDG compliant)
+
+=item F<~/.joc> (deprecated)
+
+Default "top-level" directory for application configuration files.
+See L<APP_DIR|/APP_DIR>.
+
+=item F<~/.config/joc/config> (XDG compliant)
+
+=item F<~/.joc/config> (deprecated)
 
 Location of configuration files; for instance, the configuration I<foo>
-would be found in C<~/.joc/config/foo.conf>.
+would be found in C<~/.config/joc/config/foo.conf>.
+
+See L<CONFIG_DIR|/CONFIG_DIR> and L<--confdir|/--confdir>.
+
+=item F<~/.local/share/joc/joc_state.yml>
+
+=item F<~/.joc/state/joc_state.yml>
+
+Application state file (such as active exclusion routes).
 
 =item F</etc/ssl/certs/ca-bundle.crt>
 
@@ -257,7 +352,7 @@ L<pulse_connect(1p)>.
 
 =head1 AUTHOR
 
-Steven Bakker C<< <sb AT monkey-mind DOT net> >>.
+Steven Bakker C<< <sbakker@cpan.org> >>.
 
 =head1 HISTORY
 
@@ -266,7 +361,7 @@ Inspired by C<jnc>, a wrapper for the Juniper network connect client
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright 2016, Steven Bakker C<< <sb AT monkey-mind DOT net> >>.
+Copyright 2016, Steven Bakker C<< <sbakker@cpan.org> >>.
 
 This is free software; you can redistribute it and/or modify it under the
 same terms as the Perl 5 programming language system itself.

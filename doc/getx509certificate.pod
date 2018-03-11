@@ -16,13 +16,16 @@ I<outfile>B<.pem> and I<outfile>B<.der>, respectively.
 
 L<openssl(1)>, L<x509(1)>, L<s_client(1)>.
 
+
+=cut
+
 =head1 AUTHOR
 
-Steven Bakker C<< <sb AT monkey-mind DOT net> >>
+Steven Bakker C<< <sbakker@cpan.org> >>
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright 2016, Steven Bakker C<< <sb AT monkey-mind DOT net> >>.
+Copyright 2016, Steven Bakker C<< <sbakker@cpan.org> >>.
 
 This is free software; you can redistribute it and/or modify it under the
 same terms as the Perl 5 programming language system itself.
