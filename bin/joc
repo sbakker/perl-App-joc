@@ -472,7 +472,7 @@ sub read_args {
     'environment|e=s' => $opts{environment},
     'stop|s'          => \$opts{stop},
     'help|h|?'        => sub { help(); exit 0; },
-  ) or die qq{Try "$progname --help" for more information.\n"};
+  ) or die qq{Try "$progname --help" for more information.\n};
 
   if (@ARGV == 1) {
     $opts{config_file} = (shift @ARGV).".yml";
@@ -628,7 +628,12 @@ sub read_statefile {
 #############################################################################
 sub ocstop {
 #############################################################################
+    print "stopping openconnect\n";
+
     my $state = read_statefile();
+
+    select STDERR; $|=1;
+    select STDOUT; $|=1;
 
     my $pid = $state->{pid};
     my $routes = $state->{exclusion_routes};
