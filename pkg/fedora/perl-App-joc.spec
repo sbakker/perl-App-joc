@@ -1,6 +1,6 @@
 Name:           perl-App-joc
 Version:        0.08
-Release:        1%{?dist}
+Release:        3%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
@@ -75,6 +75,10 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Thu Nov 1 2018 Steven Bakker <sb@monkey-mind.net> 0.08-3
+- Release 0.08-3 (rebuild for Fedora 29)
+* Thu Nov 1 2018 Steven Bakker <sb@monkey-mind.net> 0.08-2
+- Release 0.08-2 (fix dependencies)
 * Sun Mar 11 2018 Steven Bakker <sb@monkey-mind.net> 0.08-1
 - Release 0.08-1 (minor DOC fixes).
 * Tue Jan 30 2018 Steven Bakker <sb@monkey-mind.net> 0.07-1
