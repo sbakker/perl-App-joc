@@ -1,6 +1,6 @@
 Name:           perl-App-joc
-Version:        0.08
-Release:        3%{?dist}
+Version:        0.09
+Release:        1%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
@@ -39,7 +39,7 @@ Requires:       openssl >= 0.9.8
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 
 %description
-JOC (Juniper Openconnect Client) CLI tool
+JOC (Juniper Openconnect Client) CLI tool for PulseSecure VPN
 
 %prep
 %setup -q -n App-joc-%{version}
@@ -75,6 +75,8 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Fri Dec 14 2018 Steven Bakker <sb@monkey-mind.net> 0.09-1
+- Release 0.09-1.
 * Thu Nov 1 2018 Steven Bakker <sb@monkey-mind.net> 0.08-3
 - Release 0.08-3 (rebuild for Fedora 29)
 * Thu Nov 1 2018 Steven Bakker <sb@monkey-mind.net> 0.08-2
