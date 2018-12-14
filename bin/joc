@@ -417,7 +417,7 @@ print <<HELP;
 Usage: $progname [OPTIONS]... [CONFIG]
        $progname -s (stop all running openconnect clients)
 
-$progname: a wrapper for using openconnect to connect to Juniper Pulse VPNs
+$progname: a wrapper for using openconnect to connect to PulseSecure VPNs
 
 -c DIR
 --confdir=DIR
@@ -786,7 +786,9 @@ B<joc> B<--help>
 
 =head1 DESCRIPTION
 
-Wrapper for using L<openconnect(8)> to connect to Juniper Pulse VPNs.
+Wrapper for using L<openconnect(8)> to connect to PulseSecure VPNs.
+PulseSecure was formerly known as "Juniper Pulse", hence the "J"
+in "joc".
 
 =head1 PREREQUISITES
 
