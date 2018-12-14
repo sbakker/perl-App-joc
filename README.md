@@ -4,7 +4,7 @@
 
 ### JOC - Juniper Openconnect Client
 
-This package provides a CLI tool to connect to Juniper VPN services using openconnect rather than the "native" Juniper client.
+This package provides a CLI tool to connect to PulseSecure VPN services (formerly Juniper VPN) using openconnect rather than the "native" Pulse client.
 
 Different user configurations are supported by YAML files.
 
@@ -16,7 +16,7 @@ Tools included in this package:
 
   * `bin/pulse_connect`
 
-    Shell script to connect using Juniper's `pulsesvc` client.
+    Shell script to connect using the "native" `pulsesvc` client.
     Functionality is more limited than that of `joc`.
 
   * `bin/getx509certificate`
@@ -52,7 +52,7 @@ To build:
  
 ## COPYRIGHT AND LICENCE
  
-Copyright (c) 2016, Steven Bakker _<sb AT monkey-mind DOT net>_
+Copyright (c) 2016, Steven Bakker _<sbakker AT cpan.org>_
  
 This package is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
