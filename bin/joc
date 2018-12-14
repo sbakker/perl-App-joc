@@ -104,8 +104,7 @@ sub Main {
         ocstop();
     }
     else {
-        my $config = read_config($config_path,
-            %ENV,
+        my $config = read_config($config_path, \%ENV,
             CONFIG_DIR          => $$opts{config_dir},
             APP_DIR             => $APP_DIR,
             default_cafile      => \@DFL_CAFILE,
@@ -487,11 +486,14 @@ sub read_args {
 #############################################################################
 sub read_config {
 #############################################################################
-    my ($config_file, %defaults) = @_;
+    my ($config_file, $env, %defaults) = @_;
 
     my $config = YAML::AppConfig->new( yaml_class => 'YAML::XS' );
 
-    # Initialise config with defaults.
+    # Initialise config with environment and defaults.
+    while (my ($k, $v) = each %$env) {
+        $config->set($k => $v);
+    }
     while (my ($k, $v) = each %defaults) {
         $config->set($k => $v);
     }
@@ -504,29 +506,30 @@ sub read_config {
     $config->get('url') or die "No url defined in $config_file.\n";
     $config->get('user') or die "No user defined in $config_file.\n";
 
-    if (! $config->get('cafile') && ! $config->get('servercert')) {
-        if (my $dfl_ca = $config->get('default_cafile')) {
-            my @dfl_ca = ref $dfl_ca ? @$dfl_ca : ($dfl_ca);
-            if ($dfl_ca = first { -f $_ } @dfl_ca) {
-                info(
-                    "No cafile or servercert defined in $config_file.\n",
-                    "Choosing default cafile '$dfl_ca'.\n"
-                );
-                $config->set('cafile' => $dfl_ca);
-            }
-            else {
-                fatal(
-                    "No cafile or servercert defined in $config_file.\n",
-                    "No suitable default available.\n"
-                );
-            }
+    if (my $add_env = $config->get('environment')) {
+        while (my ($k, $v) = each %$add_env) {
+            $config->set($k => $v);
+            $env->{$k} = $v;
         }
-        else {
-            fatal(
+    }
+
+    if (! $config->get('cafile') && ! $config->get('servercert')) {
+        my $dfl_ca = $config->get('default_cafile')
+            or fatal(
                 "No cafile or servercert defined in $config_file.\n",
                 "No defaults defined.\n"
             );
-        }
+        my @dfl_ca = ref $dfl_ca ? @$dfl_ca : ($dfl_ca);
+        $dfl_ca = first { -f $_ } @dfl_ca
+            or fatal(
+                "No cafile or servercert defined in $config_file.\n",
+                "No suitable default available.\n"
+            );
+        info(
+            "No cafile or servercert defined in $config_file.\n",
+            "Choosing default cafile '$dfl_ca'.\n"
+        );
+        $config->set('cafile' => $dfl_ca);
     }
 
     my $app_dir = $config->get('APP_DIR');
@@ -941,6 +944,14 @@ VPN service.
 
 Ignored by C<joc> (but mandatory for L<pulse_connect(1)>).
 
+=item C<environment>
+
+Environment variables to set when running L<openconnect>(8). This
+can be used to communicate various options to the C<vpnc-script>
+(see L<FILES|/FILES> below). The most likely variables to set are
+C<INTERNAL_IP4_DNS>, C<INTERNAL_IP6_DNS>, and C<CISCO_DEF_DOMAIN>,
+which will set up customer resolver options.
+
 =item C<exclusion_routes>
 
 List of destinations to be excluded from the VPN routing.
@@ -950,7 +961,7 @@ Routes can be specified as host names or IP addresses
 =item C<extra_input>
 
 List of extra input lines to feed to L<openconnect(8)>. This can be
-handy in case of e.g. two-factor authentication with Duo.
+handy in case of e.g. two-factor authentication with Duo Security.
 
 See also the L<Duo MFA|/Duo MFA> example below.
 
@@ -1018,15 +1029,22 @@ Example config file:
     # For pulse client (see pulse_connect)
     der_certificate: ssl/vpn.example.com.der
 
+    # Optional: use different nameservers when connecting over VPN
+    environment:
+        INTERNAL_IP4_DNS: "192.168.192.45 92.168.192.46"
+        CISCO_DEF_DOMAIN: example.com
+
 Using the config:
 
     joc example
 
 =head2 Duo MFA
 
-Example config for Duo multi-factor authentication. This is basically the
-same as the exampla above, except for the change in C<url> and the addition
-of C<extra_input>:
+Example config for Duo multi-factor authentication. This is basically
+the same as the example above, except for the change in C<url> and the
+addition of C<extra_input>. Note that instead of sending the explicit
+C<push> command, it is usually possible to configure Duo Security to
+automatically send a push. YMMV.
 
     # Configuration in "~/.joc/config/duo.yml"
     ---
@@ -1060,6 +1078,11 @@ of C<extra_input>:
     # For pulse client (see pulse_connect)
     der_certificate: ssl/vpn.example.com.der
 
+    # Optional: use different nameservers when connecting over VPN
+    environment:
+        INTERNAL_IP4_DNS: "192.168.192.45 92.168.192.46"
+        CISCO_DEF_DOMAIN: example.com
+
 Using the config:
 
     joc duo
@@ -1090,6 +1113,12 @@ See L<CONFIG_DIR|/CONFIG_DIR> and L<--confdir|/--confdir>.
 
 Application state file (such as active exclusion routes).
 
+=item F</etc/vpnc/vpnc-script>
+
+Default script called by L<openconnect>(8) after creating the VPN
+connection, or before the connection is closed. This can typically
+set up custom routing, filtering, and DNS options.
+
 =item F</etc/ssl/certs/ca-bundle.crt>
 
 =item F</etc/ssl/certs/ca-certificates.crt>
@@ -1107,6 +1136,10 @@ L<getx509certificate(1p)>,
 L<openconnect(8)>,
 L<pulse_connect(1p)>.
 
+Duo Security: L<https://duo.com/>
+
+Pulse Secure: L<https://www.pulsesecure.net/>
+
 =head1 AUTHOR
 
 Steven Bakker C<< <sbakker@cpan.org> >>.
@@ -1118,7 +1151,7 @@ Inspired by C<jnc>, a wrapper for the Juniper network connect client
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright 2016, Steven Bakker C<< <sbakker@cpan.org> >>.
+Copyright 2016-2018, Steven Bakker C<< <sbakker@cpan.org> >>.
 
 This is free software; you can redistribute it and/or modify it under the
 same terms as the Perl 5 programming language system itself.
