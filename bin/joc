@@ -644,20 +644,22 @@ sub ocstop {
 
     my @pids = pgrep('openconnect');
 
-    if (@pids) {
+    print "No running openconnect found.\n" if @pids == 0;
+
+    for (my $try = 1; $try <= 3; $try++) {
+        last if @pids == 0;
         print "openconnect is running (@pids), sending signal... ";
         kill(2, @pids);
-        sleep(1);
-        if (pgrep('openconnect')) {
-            print qq{\nCould not kill all openconnect processes, try}
-                . qq{ "sudo killall -TERM openconnect".\n};
-            exit(1);
-        }
-        print "terminated.\n";
+        sleep($try);
+        @pids = pgrep('openconnect');
     }
-    else {
-        print "No running openconnect found.\n";
+
+    if (@pids) {
+        print qq{\nCould not kill all openconnect processes, try}
+            . qq{ "sudo killall -TERM openconnect".\n};
+        exit(1);
     }
+    print "terminated.\n";
 
     foreach my $route (@$routes) {
         foreach my $gw (@$gateways) {
