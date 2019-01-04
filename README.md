@@ -1,4 +1,4 @@
-## App::joc version 0.07
+## App::joc version 0.10
  
 ## DESCRIPTION
 
@@ -39,7 +39,7 @@ The distribution tarball comes with a `.spec` file (originally created using `cp
 
 To build:
 
-    rpmbuild -ta App-joc-0.07.tar.gz
+    rpmbuild -ta App-joc-0.10.tar.gz
 
 ## DEPENDENCIES
  
