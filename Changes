@@ -1,5 +1,18 @@
 Revision history for App-joc
 
+0.10    04.Jan.2019
+        * Be a little more patient when killing openconnect.
+          Especially when combined with actions for the vpnc-script
+          (e.g. resolver settings), it takes a little longer for
+          openconnect to cleanly exit. Just try a few times, and wait
+          in between.
+
+0.09    14.Dec.2018
+        * Change "Juniper" to "PulseSecure" in docs.
+        * Add more PulseSecure comments in POD.
+        * Add "environment" config var.
+        * Small fixes in diagnostics.
+
 0.08    11.Mar.2018
         * Fix documentation, email addresses.
 
