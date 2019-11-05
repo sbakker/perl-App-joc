@@ -1,6 +1,6 @@
 Name:           perl-App-joc
 Version:        0.10
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
@@ -9,7 +9,7 @@ Source0:        http://www.cpan.org/modules/by-module/App/App-joc-%{version}.tar
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 Provides:       perl(App::joc) = 0.10
-BuildRequires:  perl >= 0:5.024
+BuildRequires:  perl-interpreter >= 0:5.024
 BuildRequires:  perl-generators
 BuildRequires:  perl(ExtUtils::MakeMaker)
 BuildRequires:  perl(File::Path) >= 2.09
@@ -77,6 +77,8 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Tue Nov 5 2019 Steven Bakker <sb@monkey-mind.net> 0.10-5
+- Release 0.10-5. Fix dependency on perl-interpreter.
 * Tue Nov 5 2019 Steven Bakker <sb@monkey-mind.net> 0.10-4
 - Release 0.10-4. Rebuild for F31.
 * Mon Nov 4 2019 Steven Bakker <sb@monkey-mind.net> 0.10-3
