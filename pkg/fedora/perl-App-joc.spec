@@ -1,6 +1,6 @@
 Name:           perl-App-joc
 Version:        0.10
-Release:        5%{?dist}
+Release:        7%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
@@ -24,6 +24,7 @@ BuildRequires:  perl(URI) >= 1.71
 BuildRequires:  perl(warnings) >= 1.34
 BuildRequires:  perl(YAML::AppConfig) >= 0.19
 BuildRequires:  perl(YAML::XS) >= 0.62
+BuildRequires:  make >= 4.3
 Requires:       perl(File::Path) >= 2.09
 Requires:       perl(Getopt::Long) >= 2.49
 Requires:       perl(IPC::Run) >= 0.94
@@ -77,6 +78,10 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
+* Thu Apr 30 2021 Steven Bakker <sb@monkey-mind.net> 0.10-7
+- Release 0.10-7. Add "make" as a build requirement.
+* Thu Apr 29 2021 Steven Bakker <sb@monkey-mind.net> 0.10-6
+- Release 0.10-6. Rebuild for F33.
 * Tue Nov 5 2019 Steven Bakker <sb@monkey-mind.net> 0.10-5
 - Release 0.10-5. Fix dependency on perl-interpreter.
 * Tue Nov 5 2019 Steven Bakker <sb@monkey-mind.net> 0.10-4
