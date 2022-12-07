@@ -1,6 +1,6 @@
 Name:           perl-App-joc
 Version:        0.10
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        App::joc Perl module
 License:        GPL+ or Artistic
 Group:          Development/Libraries
@@ -78,7 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/man/man1/pulse_connect.1p.gz
 
 %changelog
-* Thu Apr 30 2021 Steven Bakker <sb@monkey-mind.net> 0.10-7
+* Wed Dec 7 2022 Steven Bakker <sb@monkey-mind.net> 0.10-8
+- Release 0.10-8. Fix date in changelog.
+* Fri Apr 30 2021 Steven Bakker <sb@monkey-mind.net> 0.10-7
 - Release 0.10-7. Add "make" as a build requirement.
 * Thu Apr 29 2021 Steven Bakker <sb@monkey-mind.net> 0.10-6
 - Release 0.10-6. Rebuild for F33.
